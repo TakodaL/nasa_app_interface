@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Artemis Junior",
+      "hasCanvas": true,
+      "bodyTextLen": 850,
+      "bodyTextHash": "be4990bef653da6860470526e7d545646402e8adf5d6baaaeeb2e707ee0fff1b",
+      "bodyTextPrefix": "NASA JUNIOR · ROUND 1 Pick our Moon base Four science teams stud",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Artemis Junior",
+      "hasCanvas": true,
+      "bodyTextLen": 850,
+      "bodyTextHash": "be4990bef653da6860470526e7d545646402e8adf5d6baaaeeb2e707ee0fff1b",
+      "bodyTextPrefix": "NASA JUNIOR · ROUND 1 Pick our Moon base Four science teams stud",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
