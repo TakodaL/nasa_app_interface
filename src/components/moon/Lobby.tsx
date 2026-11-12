@@ -36,19 +36,19 @@ export function Lobby({
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="rise">
-        <Eyebrow>NASA Junior · Round 1</Eyebrow>
+        <Eyebrow>NASA Junior · Rounds 1–5</Eyebrow>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold tracking-tight text-fg md:text-6xl">
-          Pick our Moon base
+          Run a space mission
         </h1>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-muted md:text-lg">
-          Four science teams study the lunar south pole. The class screen listens, then the crew locks one
-          site: Mons Mouton, Malapert, or Nobile Rim.
+          Choose a Moon base, survive a Martian dust storm, shelter from a solar storm, pack a space lunch and
+          solve a mystery on Mars, using real NASA data. The teacher picks which rounds to play.
         </p>
         <ol className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
-            ["1", "Open clues", "Each team reads the evidence for sun, ice, ground, and radios."],
-            ["2", "Send a pick", "Choose A, B, or C and tap the reason why."],
-            ["3", "Build", "The class debates, then hits Build our base."],
+            ["1", "Join", "The class screen shows a code. Each team joins on its own device."],
+            ["2", "Decide", "Teams read real NASA data on their device and send their choice."],
+            ["3", "Find out", "The class screen shows what happened and what NASA really did."],
           ].map(([step, title, body], index) => (
             <li key={step} className={cn("glass rounded-3xl p-4", index === 1 && "rise-2", index === 2 && "rise-3")}>
               <span className="font-display text-xs font-semibold tracking-widest text-accent">{step}</span>
