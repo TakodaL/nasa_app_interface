@@ -1,3 +1,5 @@
+import { mergeActs, mergeGame, sanitizeActs, sanitizeGame, type GameState, type TeamAct } from "@/lib/moon/game";
+
 export const TEAMS = ["energy", "water", "terrain", "comms"] as const;
 export type TeamId = (typeof TEAMS)[number];
 
@@ -20,6 +22,10 @@ export type RoomState = {
   locked: boolean;
   lockedAt: number | null;
   clearedAt: number;
+  /** Rounds 1–5 mission (written by the class screen only). */
+  game: GameState | null;
+  /** What each team device sent during Rounds 2–5. */
+  acts: Partial<Record<TeamId, TeamAct>>;
 };
 
 export type Site = {
@@ -223,6 +229,8 @@ export function emptyState(): RoomState {
     locked: false,
     lockedAt: null,
     clearedAt: 0,
+    game: null,
+    acts: {},
   };
 }
 
@@ -375,6 +383,8 @@ export function sanitize(input: unknown): RoomState {
     locked: locked && !!finalChoice && !!lockedAt,
     lockedAt: locked && finalChoice ? lockedAt : null,
     clearedAt,
+    game: sanitizeGame(input.game),
+    acts: sanitizeActs(input.acts),
   };
 }
 
@@ -411,11 +421,19 @@ export function mergeState(a: RoomState, b: RoomState): RoomState {
     locked: !!lock,
     lockedAt: lock?.at ?? null,
     finalChoice: lock?.choice ?? null,
+    game: mergeGame(a.game, b.game, clearedAt),
+    acts: mergeActs(a.acts, b.acts, clearedAt),
   };
 }
 
 export function stateAhead(local: RoomState, remote: RoomState): boolean {
   if (local.clearedAt > remote.clearedAt) return true;
+  if (local.game && (!remote.game || local.game.at > remote.game.at)) return true;
+  for (const team of TEAMS) {
+    const l = local.acts[team];
+    const r = remote.acts[team];
+    if (l && (!r || l.at > r.at)) return true;
+  }
   for (const team of TEAMS) {
     const l = local.votes[team];
     const r = remote.votes[team];

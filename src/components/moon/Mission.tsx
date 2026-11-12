@@ -6,6 +6,7 @@ import {
   CLUES,
   SITE_FILL,
   SITES_DATA,
+  siteById,
   suggestion,
   TEAM_META,
   TEAMS,
@@ -14,7 +15,13 @@ import {
   type SiteId,
   type TeamId,
 } from "@/lib/moon/model";
-import { bindRoom, lockBase, resetRoom } from "@/lib/moon/sync";
+import { bindRoom, clearVotes, lockBase, setGame } from "@/lib/moon/sync";
+import { currentRound, nextRound, ROUND_INFO, WATER_BY_SITE, type GameState } from "@/lib/moon/game";
+import { EmergencyScreen, EndScreen, MeterBar, SetupDeck, WaitCard } from "@/components/moon/GameUI";
+import { Round2Main, Round2Team } from "@/components/moon/Round2";
+import { Round3Main, Round3Team } from "@/components/moon/Round3";
+import { Round4Main, Round4Team } from "@/components/moon/Round4";
+import { Round5Main, Round5Team } from "@/components/moon/Round5";
 import { useRoom } from "@/lib/moon/use-room";
 import { ClueStack, LinkPill, Presence, SoundButton, StationStrip, TeamIcon, teamTone } from "@/components/moon/Bits";
 import { LunarMap } from "@/components/moon/LunarMap";
@@ -35,6 +42,9 @@ export function Mission({
   onLeave: () => void;
 }) {
   const { state, link, now } = useRoom();
+  const game = state.game;
+  const round = currentRound(game);
+  const info = ROUND_INFO.find((r) => r.id === round);
 
   useEffect(() => {
     try {
@@ -54,12 +64,20 @@ export function Mission({
     <div className="grid gap-4 pb-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Eyebrow>Artemis Junior · Round 1</Eyebrow>
+          <Eyebrow>
+            {game?.done ? "Artemis Junior · Mission complete" : info ? `Artemis Junior · Round ${info.id} · ${info.place}` : "Artemis Junior · Mission setup"}
+          </Eyebrow>
           <h1 className="mt-1 font-display text-2xl font-semibold md:text-3xl">
             {role === "main" ? "Class screen" : TEAM_META[role].label}
           </h1>
           <p className="mt-1 text-sm text-muted">
-            {role === "main" ? "Live picks from the four science teams." : TEAM_META[role].question}
+            {role === "main"
+              ? info
+                ? info.title
+                : "Set up the mission, then teams join with the class code."
+              : round === 1
+                ? TEAM_META[role].question
+                : info?.title ?? "Waiting for the mission to start."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -79,20 +97,11 @@ export function Mission({
           </button>
         </div>
       </div>
+      {game && game.started && !game.done && <MeterBar game={game} />}
       {role === "main" ? (
-        state.locked && state.finalChoice ? (
-          <Report
-            state={state}
-            onAgain={() => {
-              play("tap");
-              resetRoom();
-            }}
-          />
-        ) : (
-          <MainDeck room={room} />
-        )
+        <MainStage room={room} game={game} round={round} now={now} />
       ) : (
-        <TeamDeck team={role} />
+        <TeamStage team={role} game={game} round={round} />
       )}
       <p className="text-xs leading-relaxed text-faint">
         Devices with the same class code share picks. On one computer, the station buttons above hop between
@@ -100,6 +109,65 @@ export function Mission({
       </p>
     </div>
   );
+}
+
+function MainStage({ room, game, round, now }: { room: string; game: GameState | null; round: number | null; now: number }) {
+  const { state } = useRoom();
+  if (!game || !game.started) return <SetupDeck />;
+  if (game.done) return <EndScreen game={game} />;
+  if (game.emergency) return <EmergencyScreen game={game} />;
+  if (round === 1) {
+    if (state.locked && state.finalChoice) {
+      const site = state.finalChoice;
+      return (
+        <div className="grid gap-4">
+          <Report
+            state={state}
+            onAgain={() => {
+              play("tap");
+              clearVotes();
+            }}
+          />
+          <div>
+            <Button
+              onClick={() => {
+                play("send");
+                setGame(
+                  nextRound({
+                    ...game,
+                    site,
+                    water: { ...WATER_BY_SITE[site] },
+                    scores: { ...game.scores, "1": siteById(site).points },
+                  }),
+                );
+              }}
+            >
+              {game.index >= game.rounds.length - 1 ? "End of mission" : `Next: Round ${game.rounds[game.index + 1]}`}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    return <MainDeck room={room} />;
+  }
+  if (round === 2) return <Round2Main state={state} game={game} />;
+  if (round === 3) return <Round3Main state={state} game={game} now={now} />;
+  if (round === 4) return <Round4Main state={state} game={game} />;
+  if (round === 5) return <Round5Main state={state} game={game} />;
+  return null;
+}
+
+function TeamStage({ team, game, round }: { team: TeamId; game: GameState | null; round: number | null }) {
+  const { state } = useRoom();
+  if (!game || !game.started) return <WaitCard text="Waiting for your teacher to start the mission." />;
+  if (game.done) return <WaitCard text="Mission complete! See how the class did on the big screen." />;
+  if (game.emergency) return <WaitCard text="Emergency! Waiting for your teacher." />;
+  if (round === 1) return <TeamDeck team={team} />;
+  if (round === 2) return <Round2Team state={state} game={game} team={team} />;
+  if (round === 3) return <Round3Team state={state} game={game} team={team} />;
+  if (round === 4) return <Round4Team state={state} game={game} team={team} />;
+  if (round === 5) return <Round5Team state={state} game={game} team={team} />;
+  return null;
 }
 
 function MainDeck({ room }: { room: string }) {
