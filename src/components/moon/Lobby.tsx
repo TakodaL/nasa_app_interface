@@ -47,7 +47,7 @@ export function Lobby({
         <ol className="mt-6 grid gap-3 sm:grid-cols-3">
           {[
             ["1", "Open clues", "Each team reads the evidence for sun, ice, ground, and radios."],
-            ["2", "Send a pick", "Choose A, B, or C and say why in one line."],
+            ["2", "Send a pick", "Choose A, B, or C and tap the reason why."],
             ["3", "Build", "The class debates, then hits Build our base."],
           ].map(([step, title, body], index) => (
             <li key={step} className={cn("glass rounded-3xl p-4", index === 1 && "rise-2", index === 2 && "rise-3")}>
@@ -106,8 +106,8 @@ export function Lobby({
         </div>
         <p className="mt-4 text-xs leading-relaxed text-faint">
           One tablet nearby? Join as the class screen, then use the station buttons to play each team. Real
-          classrooms use one device per station. Numbers are a classroom model of Artemis candidate regions,
-          not a flight prediction.
+          classrooms use one device per station. Numbers come from NASA data on the Artemis III
+          candidate landing regions.
         </p>
       </Card>
     </div>

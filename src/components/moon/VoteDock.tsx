@@ -26,7 +26,6 @@ export function VoteDock({
   onChoice: (id: SiteId) => void;
 }) {
   const [chip, setChip] = useState<string | null>(null);
-  const [note, setNote] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const mine = activeVotes(state).find((row) => row.team === team)?.vote;
@@ -42,7 +41,7 @@ export function VoteDock({
   }
 
   const chipText = REASONS[team].find((item) => item.id === chip)?.text ?? "";
-  const reason = [chipText, note.trim()].filter(Boolean).join(" — ");
+  const reason = chipText;
 
   return (
     <div className="sticky bottom-3 z-20 glass rounded-3xl p-4">
@@ -98,20 +97,6 @@ export function VoteDock({
           );
         })}
       </div>
-      <label className="mt-3 block text-xs text-muted" htmlFor="team-note">
-        Add your team’s words
-        <input
-          id="team-note"
-          value={note}
-          maxLength={70}
-          onChange={(event) => {
-            setNote(event.target.value);
-            setSent(false);
-          }}
-          placeholder="Optional, one short line"
-          className="mt-1 min-h-11 w-full rounded-lg border border-line bg-bg px-3 text-sm text-fg placeholder:text-faint"
-        />
-      </label>
       {error && <p className="mt-2 text-sm text-warn">{error}</p>}
       {sent && mine && (
         <p className="mt-2 text-sm text-good">
