@@ -1,4 +1,5 @@
 import { pullRoom, pushRoom } from "@/lib/moon/room.functions";
+import { newGame, type GameState, type RoundId } from "@/lib/moon/game";
 import {
   emptyState,
   mergeState,
@@ -173,4 +174,36 @@ export function lockBase(choice: SiteId): boolean {
 export function resetRoom(): void {
   const seen = state.seen;
   commit({ ...emptyState(), clearedAt: Date.now(), seen });
+}
+
+/* ---- Rounds 1–5 mission ------------------------------------------------ */
+
+/** Class screen: start a new mission with the rounds the teacher ticked (C12). Clears old picks. */
+export function startGame(rounds: RoundId[]): void {
+  const clearedAt = Date.now();
+  const game = { ...newGame(rounds), at: clearedAt + 1 };
+  commit({ ...emptyState(), clearedAt, seen: state.seen, game });
+}
+
+/** Class screen: save a new mission state. */
+export function setGame(next: GameState): void {
+  const at = Math.max(Date.now(), (state.game?.at ?? 0) + 1);
+  commit(mergeState(state, { ...emptyState(), game: { ...next, at }, seen: { main: Date.now() } }));
+}
+
+/** Class screen: clear Round 1 picks without touching the mission (used when Round 1 starts). */
+export function clearVotes(): void {
+  const clearedAt = Date.now();
+  const game = state.game ? { ...state.game, at: clearedAt + 1 } : null;
+  commit({ ...emptyState(), clearedAt, seen: state.seen, game });
+}
+
+/** Team device: send this team's answer for the current step. */
+export function sendAct(team: TeamId, key: string, value: unknown): void {
+  const next = mergeState(state, {
+    ...emptyState(),
+    acts: { [team]: { key, value: JSON.stringify(value), at: Date.now() } },
+    seen: { [team]: Date.now() },
+  });
+  commit(next);
 }
