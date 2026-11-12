@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { activeVotes, classScore, debrief, scoreSite, siteById, SITES, TEAM_META, type RoomState, type SiteId } from "@/lib/moon/model";
+import { activeVotes, classScore, debrief, ICE_LABEL, siteById, sitePoints, SITES, TEAM_META, type RoomState, type SiteId } from "@/lib/moon/model";
 import { Button, Card, Eyebrow } from "@/components/moon/ui";
 import { TeamIcon, teamTone } from "@/components/moon/Bits";
 
@@ -8,19 +8,18 @@ export function Report({ state, onAgain }: { state: RoomState; onAgain: () => vo
   const choice: SiteId = state.finalChoice;
   const site = siteById(choice);
   const result = classScore(choice, state);
-  const card = scoreSite(site);
   const story = debrief(choice);
   const votes = activeVotes(state);
   const [drawn, setDrawn] = useState(0);
 
   useEffect(() => {
-    const id = window.requestAnimationFrame(() => setDrawn(result.total));
+    const id = window.requestAnimationFrame(() => setDrawn(result.points));
     return () => window.cancelAnimationFrame(id);
-  }, [result.total]);
+  }, [result.points]);
 
   const radius = 52;
   const circ = 2 * Math.PI * radius;
-  const dash = (drawn / 100) * circ;
+  const dash = (drawn / result.max) * circ;
 
   return (
     <div className="relative grid gap-4">
@@ -57,8 +56,10 @@ export function Report({ state, onAgain }: { state: RoomState; onAgain: () => vo
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-4xl font-semibold tabular-nums">{result.total}</span>
-              <span className="text-xs text-muted">class score</span>
+              <span className="font-display text-4xl font-semibold tabular-nums">
+                {result.points}/{result.max}
+              </span>
+              <span className="text-xs text-muted">points</span>
             </div>
           </div>
           <div>
@@ -68,8 +69,8 @@ export function Report({ state, onAgain }: { state: RoomState; onAgain: () => vo
             <div className="mt-3 flex flex-wrap gap-2">
               {result.fullCrew && <Badge>Full crew reported</Badge>}
               {result.agree >= 3 && <Badge>Strong agreement</Badge>}
-              {result.best && <Badge>Balanced science pick</Badge>}
-              {!result.best && <Badge>Bold tradeoff</Badge>}
+              {result.best && <Badge>Best site</Badge>}
+              {!result.best && <Badge>Not the best site</Badge>}
             </div>
           </div>
         </div>
@@ -77,15 +78,14 @@ export function Report({ state, onAgain }: { state: RoomState; onAgain: () => vo
 
       <div className="grid gap-3 md:grid-cols-2">
         <Card>
-          <h3 className="font-display text-base font-semibold">How this site scores</h3>
-          <p className="mt-1 text-sm text-muted">
-            Sun 25%, water 30%, landing 25%, Earth link 20%. Your class bonus was +{result.bonus}.
-          </p>
+          <h3 className="font-display text-base font-semibold">What NASA's data says about {site.short}</h3>
           <div className="mt-4 grid gap-3">
-            <Meter label="Sunlight" value={card.sun} />
-            <Meter label="Water ice" value={card.ice} />
-            <Meter label="Landing" value={card.landing} />
-            <Meter label="Earth link" value={card.earth} />
+            <Meter label="Sun visibility" value={site.sun} text={`${site.sun}%`} />
+            <Meter label="Earth visibility" value={site.earth} text={`${site.earth}%`} />
+            <Row label="Water ice" text={ICE_LABEL[site.iceRank]} />
+            <Row label="Average slope" text={`${site.slope}°`} />
+            <Row label="Suitable landing area" text={`${site.area} km²`} />
+            <Row label="Water for Round 3" text={site.waterBags} />
           </div>
         </Card>
         <Card>
@@ -123,21 +123,22 @@ export function Report({ state, onAgain }: { state: RoomState; onAgain: () => vo
         <ul className="mt-3 grid gap-2 sm:grid-cols-3">
           {SITES.map((id) => {
             const other = siteById(id);
-            const total = scoreSite(other).total;
+            const total = sitePoints(id);
             return (
               <li key={id} className="rounded-lg bg-bg/50 px-3 py-3">
                 <p className="font-display text-sm font-semibold">
                   {id} · {other.short}
                 </p>
-                <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{total}</p>
-                <p className="text-xs text-faint">{id === choice ? "Your base" : "Science balance"}</p>
+                <p className="mt-1 font-display text-2xl font-semibold tabular-nums">
+                  {total} {total === 1 ? "point" : "points"}
+                </p>
+                <p className="text-xs text-faint">{id === choice ? "Your base" : other.tag}</p>
               </li>
             );
           })}
         </ul>
         <p className="mt-4 text-xs leading-relaxed text-faint">
-          Scores compare tradeoffs for this classroom round. They are inspired by published Artemis south-pole
-          candidate regions, not a NASA flight decision.
+          Data: NASA, Artemis III candidate landing regions. Ranking: A (3 points), C (2 points), B (1 point).
         </p>
         <Button variant="ghost" className="mt-4" onClick={onAgain}>
           Run the round again
@@ -155,12 +156,21 @@ function Badge({ children }: { children: ReactNode }) {
   );
 }
 
-function Meter({ label, value }: { label: string; value: number }) {
+function Row({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <span>{label}</span>
+      <span className="text-right tabular-nums text-muted">{text}</span>
+    </div>
+  );
+}
+
+function Meter({ label, value, text }: { label: string; value: number; text: string }) {
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-sm">
         <span>{label}</span>
-        <span className="tabular-nums text-muted">{value}</span>
+        <span className="tabular-nums text-muted">{text}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-bg">
         <div className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out" style={{ width: `${value}%` }} />

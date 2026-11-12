@@ -29,14 +29,20 @@ export type Site = {
   tag: string;
   x: number;
   y: number;
+  /** Sun visibility, % of time (NASA Artemis III landing-region data). */
   sun: number;
-  nightDays: number;
-  ice: number;
-  kelvin: number;
-  psr: number;
+  /** Ice evidence from NASA's map of permanently shadowed areas: 3 = most likely, 1 = least. A ranking, not a measurement. */
+  iceRank: 1 | 2 | 3;
+  /** Average slope of the region, degrees. */
   slope: number;
-  pads: number;
+  /** Total suitable landing area, km². */
+  area: number;
+  /** Earth visibility, % of time. */
   earth: number;
+  /** Round 1 points for choosing this site (Rounds 1–5 document). */
+  points: number;
+  /** Water bags this site gives for the Round 3 shelter (change C5). */
+  waterBags: string;
 };
 
 export const SITE_FILL: Record<SiteId, string> = {
@@ -50,51 +56,54 @@ export const SITES_DATA: Site[] = [
     id: "A",
     name: "Mons Mouton Plateau",
     short: "Mouton",
-    tag: "Wide and steady",
+    tag: "Most sun, best Earth view, most room to land",
     x: 36,
     y: 48,
-    sun: 74,
-    nightDays: 5,
-    ice: 58,
-    kelvin: 50,
-    psr: 4,
-    slope: 6,
-    pads: 5,
-    earth: 70,
+    sun: 45,
+    iceRank: 3,
+    slope: 7.4,
+    area: 564.8,
+    earth: 74,
+    points: 3,
+    waterBags: "1 thick + 2 wide water bags",
   },
   {
     id: "B",
     name: "Malapert Massif",
     short: "Malapert",
-    tag: "Tall and chatty",
+    tag: "Gentlest slope, but little room to land",
     x: 56,
     y: 32,
-    sun: 88,
-    nightDays: 3,
-    ice: 34,
-    kelvin: 70,
-    psr: 1,
-    slope: 12,
-    pads: 2,
-    earth: 97,
+    sun: 31,
+    iceRank: 1,
+    slope: 5.6,
+    area: 7.1,
+    earth: 41,
+    points: 1,
+    waterBags: "1 wide water bag",
   },
   {
     id: "C",
     name: "Nobile Rim 1",
     short: "Nobile",
-    tag: "Icy and cold",
+    tag: "A solid second choice",
     x: 64,
     y: 63,
-    sun: 61,
-    nightDays: 9,
-    ice: 91,
-    kelvin: 30,
-    psr: 7,
-    slope: 9,
-    pads: 3,
-    earth: 55,
+    sun: 38,
+    iceRank: 2,
+    slope: 6.3,
+    area: 22.2,
+    earth: 68,
+    points: 2,
+    waterBags: "1 thick + 1 wide water bag",
   },
 ];
+
+export const ICE_LABEL: Record<1 | 2 | 3, string> = {
+  3: "Most likely",
+  2: "Likely",
+  1: "Least likely",
+};
 
 export const TEAM_META: Record<
   TeamId,
@@ -103,22 +112,22 @@ export const TEAM_META: Record<
   energy: {
     label: "Energy",
     mission: "Sunlight and solar power",
-    question: "Where can solar panels stay awake the longest?",
+    question: "Solar panels need sunlight to produce electricity. Which location gets the most sunlight?",
   },
   water: {
     label: "Water",
     mission: "Ice in cold shadows",
-    question: "Where can the crew find water ice?",
+    question: "Astronauts need water to drink, grow food and produce oxygen. But where could we find it on the Moon?",
   },
   terrain: {
     label: "Terrain",
-    mission: "Slopes and landing pads",
-    question: "Where is the ground gentle enough to land?",
+    mission: "Slopes and landing room",
+    question: "Astronauts need a safe place to land. All three locations have suitable landing areas, but which one gives more landing options?",
   },
   comms: {
     label: "Communications",
     mission: "Calling Earth",
-    question: "Where can the radio see Earth?",
+    question: "Astronauts need to contact Earth. Mountains and craters can block the signal! Which location sees Earth the most?",
   },
 };
 
@@ -126,24 +135,24 @@ export type ReasonChip = { id: string; text: string; leans: SiteId };
 
 export const REASONS: Record<TeamId, ReasonChip[]> = {
   energy: [
-    { id: "sun", text: "The most sunlight for solar panels", leans: "B" },
-    { id: "mix", text: "Good sun, and not too far from ice", leans: "A" },
-    { id: "night", text: "We can pack batteries for a longer night", leans: "C" },
+    { id: "sun", text: "The most sunlight for solar panels (45%)", leans: "A" },
+    { id: "mid", text: "Good sunlight (38%), a strong backup", leans: "C" },
+    { id: "low", text: "Least sunlight (31%), so we would need extra batteries", leans: "B" },
   ],
   water: [
-    { id: "ice", text: "The strongest ice clues", leans: "C" },
-    { id: "reach", text: "Some ice, easier to reach from a flat pad", leans: "A" },
-    { id: "drive", text: "Less ice here, but a rover could drive to it", leans: "B" },
+    { id: "ice", text: "The most shadowed craters nearby, so ice is most likely", leans: "A" },
+    { id: "some", text: "Some shadowed craters, a good second choice", leans: "C" },
+    { id: "few", text: "Fewer shadows, so ice is less likely", leans: "B" },
   ],
   terrain: [
-    { id: "flat", text: "Flattest ground and the biggest landing pad", leans: "A" },
-    { id: "care", text: "Steeper, but still landable if we aim carefully", leans: "C" },
-    { id: "steep", text: "Too steep and small for a first base", leans: "B" },
+    { id: "room", text: "By far the most room to land (564.8 km²)", leans: "A" },
+    { id: "gentle", text: "The gentlest average slope (5.6°)", leans: "B" },
+    { id: "both", text: "Gentle slope and some landing room (22.2 km²)", leans: "C" },
   ],
   comms: [
-    { id: "always", text: "Earth stays in view almost all the time", leans: "B" },
-    { id: "most", text: "Enough Earth time to call home most days", leans: "A" },
-    { id: "relay", text: "More blackouts, so we would need a relay plan", leans: "C" },
+    { id: "most", text: "Earth is in view the most (74%)", leans: "A" },
+    { id: "good", text: "Earth is in view most of the time (68%)", leans: "C" },
+    { id: "least", text: "Earth is hidden more often (41%)", leans: "B" },
   ],
 };
 
@@ -155,53 +164,53 @@ export const CLUES: Record<TeamId, { title: string; body: string }[]> = {
     },
     {
       title: "Peaks catch the Sun",
-      body: "High rims near the south pole can stay in sunlight for most of the year. Crater floors can stay dark.",
+      body: "Near the south pole, the Sun stays low. Some high places see it often, while crater floors can stay dark.",
     },
     {
       title: "Night needs a plan",
-      body: "No Sun means no solar power. Batteries, fuel cells, or a small nuclear source have to cover the dark.",
+      body: "No Sun means no solar power. Batteries have to cover the dark, so more sunlight means smaller batteries.",
     },
   ],
   water: [
     {
       title: "Shadows that never end",
-      body: "Some crater floors never see the Sun. Scientists call them permanently shadowed regions, or PSRs.",
+      body: "Some crater floors never see the Sun. Scientists call them permanently shadowed regions.",
     },
     {
-      title: "Cold keeps ice",
-      body: "In the coldest traps, ice can sit for millions of years. Warmer ground lets it escape into space.",
+      title: "Colder than anywhere",
+      body: "NASA's LRO spacecraft measured −248 °C (25 K) inside a dark crater near the Moon's north pole: one of the coldest places ever measured in the solar system. Dark craters near the south pole are just as cold, and some have not seen sunlight for billions of years, so ice there can stay frozen.",
     },
     {
-      title: "Ice is useful",
-      body: "Water ice can become drinking water, breathable air, and rocket fuel. NASA hunts it on purpose.",
+      title: "More shadow, more chance",
+      body: "More shadow does not automatically mean more water, but it makes finding ice more likely. Water ice can become drinking water, air and rocket fuel.",
     },
   ],
   terrain: [
     {
       title: "Landers like it gentle",
-      body: "A wheelchair ramp is about 5°. Steeper than 10° gets tricky for a lander, a rover, and a habitat.",
+      body: "Slope is how steep the ground is. A wheelchair ramp is about 5°. Gentler ground is easier to land on.",
     },
     {
-      title: "Room to build",
-      body: "A base needs flat pads for the lander, solar panels, a habitat, and a safe backup spot.",
+      title: "Average or area?",
+      body: "Average slope describes the region overall, not every landing spot. A larger suitable area gives more places to choose from.",
     },
     {
-      title: "Peaks trade safety",
-      body: "A tall massif sees Earth and the Sun well, but the flat spots on it can be small and steep.",
+      title: "All three are landable",
+      body: "All three regions have suitable landing areas. None is unsafe. The question is which one gives more options.",
     },
   ],
   comms: [
     {
       title: "Earth sits low",
-      body: "From the lunar south pole, Earth hangs near the horizon. A hill can hide it.",
+      body: "From the lunar south pole, Earth hangs near the horizon. A mountain or crater rim can hide it.",
     },
     {
-      title: "Height helps the radio",
-      body: "A tall peak like Malapert can keep Earth in view almost the whole time.",
+      title: "Blocked signals",
+      body: "When Earth is out of view, the base cannot call home directly. More Earth visibility means more time to talk.",
     },
     {
-      title: "Quiet radios",
-      body: "When Earth dips away, the direct call drops. A relay satellite or a second antenna can help.",
+      title: "Compare the numbers",
+      body: "NASA measured how much of the time Earth is visible from each region. Higher is better for calling home.",
     },
   ],
 };
@@ -223,36 +232,15 @@ export function siteById(id: SiteId): Site {
   return site;
 }
 
-export function kelvinToC(k: number): number {
-  return Math.round(k - 273.15);
+/** Round 1 points for a site: 3 / 2 / 1 (Rounds 1–5 document). */
+export function sitePoints(id: SiteId): number {
+  return siteById(id).points;
 }
 
-export function blackoutDays(earth: number): number {
-  return Math.round(((100 - earth) / 100) * 29);
-}
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, n));
-}
-
-export type ScoreCard = {
-  sun: number;
-  ice: number;
-  landing: number;
-  earth: number;
-  total: number;
-};
-
-export function scoreSite(site: Site): ScoreCard {
-  const slopeScore = clamp(Math.round(100 - (site.slope - 5) * 8), 0, 100);
-  const padScore = Math.round((site.pads / 5) * 100);
-  const landing = Math.round(slopeScore * 0.6 + padScore * 0.4);
-  const total = Math.round(site.sun * 0.25 + site.ice * 0.3 + landing * 0.25 + site.earth * 0.2);
-  return { sun: site.sun, ice: site.ice, landing, earth: site.earth, total };
-}
+export const MAX_POINTS = 3;
 
 export function bestSiteId(): SiteId {
-  return [...SITES].sort((a, b) => scoreSite(siteById(b)).total - scoreSite(siteById(a)).total)[0];
+  return [...SITES].sort((a, b) => sitePoints(b) - sitePoints(a))[0];
 }
 
 export function activeVotes(state: RoomState): { team: TeamId; vote: Vote }[] {
@@ -292,9 +280,8 @@ export function suggestion(state: RoomState): { choice: SiteId | null; note: str
 }
 
 export type ClassResult = {
-  total: number;
-  base: number;
-  bonus: number;
+  points: number;
+  max: number;
   submitted: number;
   agree: number;
   best: boolean;
@@ -302,24 +289,15 @@ export type ClassResult = {
 };
 
 export function classScore(choice: SiteId, state: RoomState): ClassResult {
-  const base = scoreSite(siteById(choice)).total;
   const votes = activeVotes(state);
   const submitted = votes.length;
   const agree = votes.filter(({ vote }) => vote.choice === choice).length;
-  let bonus = 0;
-  if (submitted === 4) bonus += 8;
-  else if (submitted >= 2) bonus += 3;
-  if (agree >= 3) bonus += 6;
-  else if (agree === 2) bonus += 3;
-  const best = choice === bestSiteId();
-  if (best) bonus += 4;
   return {
-    total: Math.min(100, base + bonus),
-    base,
-    bonus,
+    points: sitePoints(choice),
+    max: MAX_POINTS,
     submitted,
     agree,
-    best,
+    best: choice === bestSiteId(),
     fullCrew: submitted === 4,
   };
 }
@@ -328,24 +306,22 @@ export function debrief(id: SiteId): { cheer: string; watch: string } {
   if (id === "A") {
     return {
       cheer:
-        "Mons Mouton gives the crew a wide, gentler place to land, with a fair mix of sun, ice nearby, and time to talk to Earth.",
-      watch:
-        "Ice clues are stronger at Nobile Rim. A rover trip into a cold shadow may still be on the chore list.",
+        "Mons Mouton Plateau has the most sunlight (45%), the best Earth visibility (74%) and the largest suitable landing area (564.8 km²). Its cold shadowed regions could also have water ice.",
+      watch: "Water for later: 1 thick + 2 wide water bags for the Round 3 shelter.",
     };
   }
-  if (id === "B") {
+  if (id === "C") {
     return {
       cheer:
-        "Malapert is the champion for sunlight and calling Earth. The radio would almost never go quiet.",
+        "Nobile Rim 1 has some sunlight (38%), good Earth visibility (68%) and suitable landing areas (22.2 km²).",
       watch:
-        "The ground is steeper, the flat pad is small, and the ice clues are the weakest. Landing and water are the hard parts.",
+        "Site A offers better conditions in all three measured categories. Water for later: 1 thick + 1 wide water bag.",
     };
   }
   return {
-    cheer:
-      "Nobile Rim hides the coldest traps and the best ice clues. Water for drinking, air, and fuel could be close.",
+    cheer: "Malapert Massif has the lowest average slope (5.6°).",
     watch:
-      "Nights last longer and Earth slips away more often. The crew needs batteries and a plan for quiet radios.",
+      "It offers much less suitable landing area (7.1 km²), sunlight (31%) and Earth visibility (41%). Water for later: 1 wide water bag.",
   };
 }
 
