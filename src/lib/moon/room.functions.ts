@@ -39,6 +39,8 @@ export const pushRoom = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<RoomState> => {
     const { getSql } = await import("@/lib/db");
     const sql = await getSql();
+    // Privacy rule C15: a game is deleted after 3 hours without activity.
+    await sql`delete from moon_rooms where updated_at < now() - interval '3 hours'`;
     const rows = await sql<{ payload: string }>`select payload from moon_rooms where code = ${data.code}`;
     let prev = emptyState();
     if (rows[0]) {

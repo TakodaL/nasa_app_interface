@@ -17,6 +17,7 @@ import {
 } from "@/lib/moon/game";
 import { resetRoom, setGame, startGame } from "@/lib/moon/sync";
 import { Button, Card, cn, Eyebrow } from "@/components/moon/ui";
+import { SourcesToggle } from "@/components/moon/Sources";
 
 /** C14: reads `text` aloud with the browser's own speech. Hidden when the browser can't speak. */
 export function SpeakButton({ text, className }: { text: string; className?: string }) {
@@ -128,11 +129,6 @@ export function SetupDeck() {
               </li>
             );
           })}
-          <li className="flex min-h-12 items-center gap-3 rounded-lg border border-dashed border-line px-3 text-sm text-faint">
-            <input type="checkbox" disabled className="size-5" aria-label="Round 6 (coming soon)" />
-            <span className="flex-1">Round 6 · NASA Space Apps data</span>
-            <span>Coming soon</span>
-          </li>
         </ul>
         <div className="mt-4 flex items-center justify-between border-t border-line pt-3 text-sm">
           <span>Estimated time (with intro and end)</span>
@@ -148,6 +144,9 @@ export function SetupDeck() {
           <Rocket className="size-4" />
           Start the mission
         </Button>
+        <div className="mt-4">
+          <SourcesToggle />
+        </div>
       </Card>
     </div>
   );
@@ -257,6 +256,9 @@ export function EndScreen({ game }: { game: GameState }) {
         <Button className="mt-4" onClick={() => { play("tap"); resetRoom(); }}>
           Play again
         </Button>
+        <div className="mt-4">
+          <SourcesToggle />
+        </div>
       </Card>
     </div>
   );

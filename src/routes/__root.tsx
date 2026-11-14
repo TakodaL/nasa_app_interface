@@ -14,7 +14,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "A classroom mission for ages 7–12. Four science teams and one class screen choose a south-pole Moon base.",
+          "A classroom space mission for ages 7–12 built on real NASA data: choose a Moon base, survive a Mars dust storm, shelter from a solar storm, pack a space lunch and solve a Mars mystery.",
       },
       { name: "theme-color", content: "#0b0f19" },
     ],

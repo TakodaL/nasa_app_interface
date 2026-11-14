@@ -70,7 +70,7 @@ export function LunarMap({
         })}
       </div>
       <p className="mt-3 text-center text-xs text-faint">
-        South pole, classroom map. Earth sits above the limb. Not to scale.
+        Illustration of the south pole (not a real map). Pin positions are approximate.
       </p>
     </div>
   );
