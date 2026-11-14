@@ -106,8 +106,8 @@ export function Lobby({
         </div>
         <p className="mt-4 text-xs leading-relaxed text-faint">
           One tablet nearby? Join as the class screen, then use the station buttons to play each team. Real
-          classrooms use one device per station. Numbers come from NASA data on the Artemis III
-          candidate landing regions.
+          classrooms use one device per station. Numbers come from public NASA data. This is a
+          student project, not an official NASA product.
         </p>
       </Card>
     </div>

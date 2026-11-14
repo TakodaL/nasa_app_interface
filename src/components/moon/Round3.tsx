@@ -341,6 +341,7 @@ function Reveal({ game }: { game: GameState }) {
             On the International Space Station, radiation sensors measured about <b>0.2 milligray every day</b>. In 39 days that
             added up to about <b>8</b>. Shielding is how astronauts keep this number low.
           </p>
+          <p className="mt-1 text-sm text-muted">A milligray (mGy) measures how much radiation the body takes in.</p>
           <p className="mt-1 text-xs text-faint">Environmental Data App, Rodent Research-1 (2014): 0.19–0.23 mGy/day, 7.96 mGy total.</p>
         </div>
         <div className="mt-3 rounded-2xl bg-bg/50 px-4 py-3">

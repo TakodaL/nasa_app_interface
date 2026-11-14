@@ -17,7 +17,7 @@ import {
 } from "@/lib/moon/model";
 import { bindRoom, clearVotes, lockBase, setGame } from "@/lib/moon/sync";
 import { currentRound, nextRound, ROUND_INFO, WATER_BY_SITE, type GameState } from "@/lib/moon/game";
-import { EmergencyScreen, EndScreen, MeterBar, SetupDeck, WaitCard } from "@/components/moon/GameUI";
+import { EmergencyScreen, EndScreen, MeterBar, SetupDeck, SpeakButton, WaitCard } from "@/components/moon/GameUI";
 import { Round2Main, Round2Team } from "@/components/moon/Round2";
 import { Round3Main, Round3Team } from "@/components/moon/Round3";
 import { Round4Main, Round4Team } from "@/components/moon/Round4";
@@ -70,7 +70,8 @@ export function Mission({
           <h1 className="mt-1 font-display text-2xl font-semibold md:text-3xl">
             {role === "main" ? "Class screen" : TEAM_META[role].label}
           </h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 flex items-start gap-2 text-sm text-muted">
+            {role !== "main" && round === 1 && <SpeakButton text={TEAM_META[role].question} />}
             {role === "main"
               ? info
                 ? info.title
@@ -191,6 +192,16 @@ function MainDeck({ room }: { room: string }) {
           <Presence state={state} now={now} />
         </div>
         <LunarMap selected={chosen} counts={counts} onSelect={(id) => { play("tap"); setPick(id); }} />
+        <figure className="mt-4 overflow-hidden rounded-2xl bg-bg/50">
+          <img
+            src="/art/nasa-artemis3-regions.jpg"
+            alt="NASA map of the Artemis III candidate landing regions near the lunar south pole, including Mons Mouton, Malapert Massif and Nobile Rim 1"
+            className="w-full"
+          />
+          <figcaption className="px-3 py-2 text-xs text-muted">
+            The real map: NASA's Artemis III candidate landing regions. Image: NASA.
+          </figcaption>
+        </figure>
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
           {SITES_DATA.map((site) => (
             <button
